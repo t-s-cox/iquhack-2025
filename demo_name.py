@@ -25,6 +25,7 @@ from dwave.system import LeapHybridCQMSampler
 from itertools import product
 from random import random
 from random import seed
+from math import floor
 
 #SEED
 seed(1)
@@ -38,7 +39,7 @@ efficiency_constant = 0.05
 
 #VAR ARRAYS
 vehicles = [f'v{n}' for n in range(1, num_vehicles+1)]
-destinations = [0] + [m in range(1, num_destinations+1)]
+destinations = [0] + [m for m in range(1, num_destinations)]
 times = {}
 for element in product(destinations, destinations):
     q, p = element
@@ -66,6 +67,8 @@ times[6, 5] = 5
 times[7, 6] = 4
 times[7, 0] = 5
 times[4, 0] = 6
+
+print(d["v_1", b] for b in range(8))
 
 #VARS
 d = {(i,j):Binary(f'd_{i}{j}') for i in vehicles for j in destinations}
