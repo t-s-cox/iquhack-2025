@@ -23,41 +23,50 @@ Things to do:
 from dimod import ConstrainedQuadraticModel, Binary
 from dwave.system import LeapHybridCQMSampler
 from itertools import product
+from random import random
+from random import seed
 
+#SEED
+seed(1)
 
-#Consts
-vehicles = [f'v{n}' for n in range(1, 4)]
-destinations = ['0'] + [f'{dir}{n}' for dir in ['NE', 'NW', 'SW', 'SE'] for n in range(1, 4)]
+#CONSTS
+gas_cap = 500
+time_cap = 500
+num_vehicles = 1
+num_destinations = 8
+efficiency_constant = 0.05
+
+#VAR ARRAYS
+vehicles = [f'v{n}' for n in range(1, num_vehicles+1)]
+destinations = [0] + [m in range(1, num_destinations+1)]
 times = {}
 for element in product(destinations, destinations):
     q, p = element
     if q == p:
         times[element] = 0
-    elif q == "0" and p != "0":
-        # Transition from depot to node is cheap.
-        times[element] = int(p[-1])  # or another low cost value
-    # elif p == "0" and q != "0":
-    #     # Transition from node to depot is expensive.
-    #     times[element] = 9999999  # high penalty
     else:
-        # For node-to-node transitions, apply your logic.
-        if q[:-1] == p[:-1]:  # comparing the directional part (assuming format like 'NE1')
-            times[element] = int(q[-1]) + int(p[-1])
-        else:
-            times[element] = 20
+        times[element] = floor(900*random() + 100)
 
-gas_cap = 250
-time_cap = 250
-num_vehicles = 3
-efficiency_constant = 0.05
-intensity_inverse = {}
-intensity_inverse['0'] = 9999999
-for i in range(1, len(destinations)):
-    intensity_inverse[destinations[i]] = i
 
-#variables
+times[0, 1] = 2
+times[1, 2] = 4
+times[2, 3] = 6
+times[3, 4] = 8
+times[4, 5] = 5
+times[5, 6] = 5
+times[6, 7] = 4
+times[7, 0] = 5
+times[0, 4] = 6
 
+#VARS
 d = {(i,j):Binary(f'd_{i}{j}') for i in vehicles for j in destinations}
+
+intensity_inverse = {}
+intensity_inverse['0'] = 1000
+for i in range(1, len(destinations)):
+    intensity_inverse[destinations[i]] = 1
+
+
 '''list_test = []
 for a in vehicles:
     for b in destinations:
@@ -84,7 +93,7 @@ for i in vehicles:
     cqm.add_constraint(sum(d[i, b]*d[i, c]*times[b, c] for b in destinations for c in destinations[1:]) >= 0)
     cqm.add_constraint(sum(d[i, b]*d[i, c]*times[b, c] for b in destinations for c in destinations[1:]) <= time_cap)
 for i in vehicles:
-    cqm.add_constraint(d[i, '0']==1)
+    cqm.add_constraint(d[i, 0]==1)
 for j in destinations[1:]:
     cqm.add_constraint(sum(d[a, j] for a in vehicles) >= 1)
 
