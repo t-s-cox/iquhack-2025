@@ -55,8 +55,17 @@ times[3, 4] = 8
 times[4, 5] = 5
 times[5, 6] = 5
 times[6, 7] = 4
-times[7, 0] = 5
+times[0, 7] = 5
 times[0, 4] = 6
+times[1, 0] = 2
+times[2, 1] = 4
+times[3, 2] = 6
+times[4, 3] = 8
+times[5, 4] = 5
+times[6, 5] = 5
+times[7, 6] = 4
+times[7, 0] = 5
+times[4, 0] = 6
 
 #VARS
 d = {(i,j):Binary(f'd_{i}{j}') for i in vehicles for j in destinations}
@@ -67,23 +76,11 @@ for i in range(1, len(destinations)):
     intensity_inverse[destinations[i]] = 1
 
 
-'''list_test = []
-for a in vehicles:
-    for b in destinations:
-        for c in destinations:
-            list_test.append(d[(a, b)]*d[(a, c)]*times[(b, c)]*intensity_inverse[c])'''
-
-#x = dimod.Binary((1, 2))
-#x = [Binary(f'x_{i}')]
-#does x[1] == 2?
-
 #instantiate model
 cqm = ConstrainedQuadraticModel()
-# cqm.set_objective(sum(d[(a, b)]*d[(a, c)]*times[(b, c)]*intensity_inverse[c]) for a in vehicles for b in destinations for c in destinations)
 
-cqm.set_objective(sum(d[(a, b)]*d[(a, c)]*times[(b, c)]*intensity_inverse[c] for a in vehicles for b in destinations for c in destinations[1:]))
+cqm.set_objective(sum(d[a, b]*d[a, c]*times[b, c]*intensity_inverse[c] for a in vehicles for b in destinations for c in destinations[1:]))
 
-#cqm.set_objective(sum(list_test))
 for j in destinations:
     cqm.add_constraint(sum(d[a, j] for a in vehicles) <= num_vehicles)
 for i in vehicles:
@@ -97,9 +94,6 @@ for i in vehicles:
 for j in destinations[1:]:
     cqm.add_constraint(sum(d[a, j] for a in vehicles) >= 1)
 
-#add constraints
-
-#set objective
 
 #instantiate solver
 sampler = LeapHybridCQMSampler()
